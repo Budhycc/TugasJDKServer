@@ -1,21 +1,25 @@
-let categories = [];
+let serviceTypes = [];
+let services = [];
 
-function buildTable(transactions) {
-  const table = document.getElementById("table-transactions");
+function buildTable(services) {
+  const table = document.getElementById("table-services");
   const tbody = table.querySelector("tbody");
   tbody.replaceChildren();
   let i = 1;
-  transactions.forEach((transaction) => {
+  services.forEach((service) => {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${i}</td>
-      <td>${transaction.description}</td>
-      <td>${transaction.amount}</td>
-      <td>${transaction.date}</td>
-      <td>${getCategoryName(transaction.categoryId)}</td>
+      <td>${service.description}</td>
+      <td>${service.amount}</td>
+      <td>${service.date}</td>
+      <td>${getServiceTypeName(service.serviceTypeId)}</td>
+      <td>${service.customerName}</td>
+      <td>${service.vehicleType}</td>
+      <td>${service.licensePlate}</td>
       <td>
-        <button class="btn btn-sm btn-warning me-2" onclick="showEditForm(${transaction.id})">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteTransaction(${transaction.id})">Delete</button>
+        <button class="btn btn-sm btn-warning me-2" onclick="showEditForm(${service.id})">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteService(${service.id})">Delete</button>
       </td>
     `;
     tbody.appendChild(row);
@@ -23,29 +27,32 @@ function buildTable(transactions) {
   });
 }
 
-function getCategoryName(categoryId) {
-  const category = categories.find((c) => c.id === categoryId);
-  return category ? category.name : "Unknown";
+function getServiceTypeName(serviceTypeId) {
+  const serviceType = serviceTypes.find((st) => st.id === serviceTypeId);
+  return serviceType ? serviceType.name : "Unknown";
 }
 
-function populateCategories() {
-  const select = document.getElementById("category");
+function populateServiceTypes() {
+  const select = document.getElementById("service-type");
   select.replaceChildren();
-  categories.forEach((category) => {
+  serviceTypes.forEach((serviceType) => {
     const option = document.createElement("option");
-    option.value = category.id;
-    option.textContent = category.name;
+    option.value = serviceType.id;
+    option.textContent = serviceType.name;
     select.appendChild(option);
   });
 }
 
 function showEditForm(id) {
-  const transaction = transactions.find((t) => t.id === id);
-  document.getElementById("id").value = transaction.id;
-  document.getElementById("description").value = transaction.description;
-  document.getElementById("amount").value = transaction.amount;
-  document.getElementById("date").value = transaction.date;
-  document.getElementById("category").value = transaction.categoryId;
+  const service = services.find((s) => s.id === id);
+  document.getElementById("id").value = service.id;
+  document.getElementById("description").value = service.description;
+  document.getElementById("amount").value = service.amount;
+  document.getElementById("date").value = service.date;
+  document.getElementById("service-type").value = service.serviceTypeId;
+  document.getElementById("customer-name").value = service.customerName;
+  document.getElementById("vehicle-type").value = service.vehicleType;
+  document.getElementById("license-plate").value = service.licensePlate;
 
   document.getElementById("btn-save").textContent = "Update";
   document.getElementById("form-modal").dataset.mode = "update";
@@ -54,9 +61,9 @@ function showEditForm(id) {
   modal.show();
 }
 
-function deleteTransaction(id) {
-  if (confirm("Are you sure you want to delete this transaction?")) {
-    fetch(`/api/transactions/${id}`, { method: "DELETE" }).then(() => {
+function deleteService(id) {
+  if (confirm("Are you sure you want to delete this service?")) {
+    fetch(`/api/services/${id}`, { method: "DELETE" }).then(() => {
       loadData();
     });
   }
@@ -64,17 +71,17 @@ function deleteTransaction(id) {
 
 function loadData() {
   Promise.all([
-    fetch("/api/categories").then((res) => res.json()),
-    fetch("/api/transactions").then((res) => res.json()),
+    fetch("/api/servicetypes").then((res) => res.json()),
+    fetch("/api/services").then((res) => res.json()),
     fetch("/api/reports?type=daily").then((res) => res.json()),
     fetch("/api/reports?type=weekly").then((res) => res.json()),
     fetch("/api/reports?type=monthly").then((res) => res.json()),
     fetch("/api/reports?type=yearly").then((res) => res.json()),
-  ]).then(([cats, trans, daily, weekly, monthly, yearly]) => {
-    categories = cats;
-    transactions = trans;
-    populateCategories();
-    buildTable(transactions);
+  ]).then(([sts, srvs, daily, weekly, monthly, yearly]) => {
+    serviceTypes = sts;
+    services = srvs;
+    populateServiceTypes();
+    buildTable(services);
     displayReport(daily, "daily-report");
     displayReport(weekly, "weekly-report");
     displayReport(monthly, "monthly-report");
@@ -99,11 +106,14 @@ document.getElementById("btn-save").addEventListener("click", (e) => {
     description: document.getElementById("description").value,
     amount: document.getElementById("amount").value,
     date: document.getElementById("date").value,
-    categoryId: document.getElementById("category").value,
+    serviceTypeId: document.getElementById("service-type").value,
+    customerName: document.getElementById("customer-name").value,
+    vehicleType: document.getElementById("vehicle-type").value,
+    licensePlate: document.getElementById("license-plate").value,
   };
 
   let method = "POST";
-  let url = "/api/transactions";
+  let url = "/api/services";
   if (mode === "update") {
     method = "PUT";
     data.id = id;
@@ -126,7 +136,10 @@ document.getElementById("btn-save").addEventListener("click", (e) => {
       document.getElementById("description").value = "";
       document.getElementById("amount").value = "";
       document.getElementById("date").value = "";
-      document.getElementById("category").value = "";
+      document.getElementById("service-type").value = "";
+      document.getElementById("customer-name").value = "";
+      document.getElementById("vehicle-type").value = "";
+      document.getElementById("license-plate").value = "";
     });
 });
 

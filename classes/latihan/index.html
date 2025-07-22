@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Manajemen Keuangan Pribadi</title>
+    <title>Manajemen Bengkel Motor</title>
     <link rel="stylesheet" href="css/bootstrap.min.css" />
     <style>
       body {
@@ -16,8 +16,8 @@
       .card {
         margin-bottom: 1em;
       }
-      #table-transactions th,
-      #table-transactions td {
+      #table-services th,
+      #table-services td {
         vertical-align: middle;
         text-align: center;
       }
@@ -25,39 +25,42 @@
   </head>
   <body>
     <div class="container py-5">
-      <h1 class="display-5 fw-bold">Manajemen Keuangan Pribadi</h1>
+      <h1 class="display-5 fw-bold">Manajemen Bengkel Motor</h1>
 
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0">Transaksi</h3>
+        <h3 class="mb-0">Layanan</h3>
         <button
           type="button"
           class="btn btn-success"
           data-bs-toggle="modal"
           data-bs-target="#form-modal"
         >
-          ➕ Tambah Transaksi
+          ➕ Tambah Layanan
         </button>
       </div>
 
-      <table class="table table-striped table-bordered" id="table-transactions">
+      <table class="table table-striped table-bordered" id="table-services">
         <thead class="table-dark">
           <tr>
             <th>#</th>
             <th>Deskripsi</th>
-            <th>Jumlah</th>
+            <th>Biaya</th>
             <th>Tanggal</th>
-            <th>Kategori</th>
+            <th>Jenis Layanan</th>
+            <th>Nama Pelanggan</th>
+            <th>Jenis Kendaraan</th>
+            <th>Plat Nomor</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td colspan="6">Tidak ada data</td>
+            <td colspan="9">Tidak ada data</td>
           </tr>
         </tbody>
       </table>
 
-      <h3 class="mt-5 mb-4">Laporan Pengeluaran</h3>
+      <h3 class="mt-5 mb-4">Laporan Pendapatan</h3>
       <div class="row g-3">
         <div class="col-md-3">
           <div class="card shadow-sm">
@@ -99,7 +102,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title" id="staticBackdropLabel">Form Transaksi</h5>
+            <h5 class="modal-title" id="staticBackdropLabel">Form Layanan</h5>
             <button
               type="button"
               class="btn-close btn-close-white"
@@ -111,10 +114,10 @@
             <input type="hidden" id="id" />
             <div class="mb-3">
               <label for="description" class="form-label">Deskripsi</label>
-              <input type="text" class="form-control" id="description" placeholder="Contoh: Gaji, Belanja, dll." />
+              <input type="text" class="form-control" id="description" placeholder="Contoh: Ganti Oli, Servis Rutin, dll." />
             </div>
             <div class="mb-3">
-              <label for="amount" class="form-label">Jumlah (Rp)</label>
+              <label for="amount" class="form-label">Biaya (Rp)</label>
               <input type="number" class="form-control" id="amount" placeholder="Masukkan nominal" />
             </div>
             <div class="mb-3">
@@ -122,10 +125,22 @@
               <input type="date" class="form-control" id="date" />
             </div>
             <div class="mb-3">
-              <label for="category" class="form-label">Kategori</label>
-              <select class="form-select" id="category">
-                <option value="" disabled selected>Pilih kategori</option>
+              <label for="service-type" class="form-label">Jenis Layanan</label>
+              <select class="form-select" id="service-type">
+                <option value="" disabled selected>Pilih jenis layanan</option>
               </select>
+            </div>
+            <div class="mb-3">
+              <label for="customer-name" class="form-label">Nama Pelanggan</label>
+              <input type="text" class="form-control" id="customer-name" placeholder="Masukkan nama pelanggan" />
+            </div>
+            <div class="mb-3">
+              <label for="vehicle-type" class="form-label">Jenis Kendaraan</label>
+              <input type="text" class="form-control" id="vehicle-type" placeholder="Contoh: Honda Beat, Yamaha NMAX, dll." />
+            </div>
+            <div class="mb-3">
+              <label for="license-plate" class="form-label">Plat Nomor</label>
+              <input type="text" class="form-control" id="license-plate" placeholder="Contoh: B 1234 ABC" />
             </div>
           </div>
           <div class="modal-footer">

@@ -1,10 +1,10 @@
 package latihan;
 
-public class Category {
+public class ServiceType {
     private int id;
     private String name;
 
-    public Category(int id, String name) {
+    public ServiceType(int id, String name) {
         this.id = id;
         this.name = name;
     }
