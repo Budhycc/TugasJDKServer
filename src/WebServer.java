@@ -47,8 +47,8 @@ public class WebServer {
 
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/", staticHandler);
-        server.createContext("/api/categories", this::handleCategories);
-        server.createContext("/api/transactions", this::handleTransactions);
+        server.createContext("/api/servicetypes", this::handleServiceTypes);
+        server.createContext("/api/services", this::handleServices);
         server.createContext("/api/reports", this::handleReports);
     }
 
@@ -82,38 +82,38 @@ public class WebServer {
         sendResponse(exchange, 200, json);
     }
 
-    private void handleCategories(HttpExchange exchange) throws IOException {
+    private void handleServiceTypes(HttpExchange exchange) throws IOException {
         if ("GET".equals(exchange.getRequestMethod())) {
-            var categories = db.getAllCategories();
-            var json = gson.toJson(categories);
+            var serviceTypes = db.getAllServiceTypes();
+            var json = gson.toJson(serviceTypes);
             sendResponse(exchange, 200, json);
         } else {
             exchange.sendResponseHeaders(405, -1);
         }
     }
 
-    private void handleTransactions(HttpExchange exchange) throws IOException {
+    private void handleServices(HttpExchange exchange) throws IOException {
         switch (exchange.getRequestMethod()) {
             case "GET" -> {
-                var transactions = db.getAllTransactions();
-                var json = gson.toJson(transactions);
+                var services = db.getAllServices();
+                var json = gson.toJson(services);
                 sendResponse(exchange, 200, json);
             }
             case "POST" -> {
-                var transaction = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Transaction.class);
-                var newTransaction = db.addTransaction(transaction);
-                var json = gson.toJson(newTransaction);
+                var service = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Service.class);
+                var newService = db.addService(service);
+                var json = gson.toJson(newService);
                 sendResponse(exchange, 201, json);
             }
             case "PUT" -> {
-                var transaction = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Transaction.class);
-                var updatedTransaction = db.updateTransaction(transaction);
-                var json = gson.toJson(updatedTransaction);
+                var service = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Service.class);
+                var updatedService = db.updateService(service);
+                var json = gson.toJson(updatedService);
                 sendResponse(exchange, 200, json);
             }
             case "DELETE" -> {
                 var id = Integer.parseInt(exchange.getRequestURI().getPath().substring(exchange.getRequestURI().getPath().lastIndexOf('/') + 1));
-                db.deleteTransaction(id);
+                db.deleteService(id);
                 exchange.sendResponseHeaders(204, -1);
             }
             default -> exchange.sendResponseHeaders(405, -1);

@@ -16,59 +16,65 @@ public class Database {
         return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
     }
 
-    public List<Category> getAllCategories() {
-        List<Category> categories = new ArrayList<>();
-        String sql = "SELECT * FROM categories";
+    public List<ServiceType> getAllServiceTypes() {
+        List<ServiceType> serviceTypes = new ArrayList<>();
+        String sql = "SELECT * FROM service_types";
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                categories.add(new Category(rs.getInt("id"), rs.getString("name")));
+                serviceTypes.add(new ServiceType(rs.getInt("id"), rs.getString("name")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return categories;
+        return serviceTypes;
     }
 
-    public List<Transaction> getAllTransactions() {
-        List<Transaction> transactions = new ArrayList<>();
-        String sql = "SELECT * FROM transactions";
+    public List<Service> getAllServices() {
+        List<Service> services = new ArrayList<>();
+        String sql = "SELECT * FROM services";
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                transactions.add(new Transaction(
+                services.add(new Service(
                         rs.getInt("id"),
                         rs.getString("description"),
                         rs.getBigDecimal("amount"),
                         rs.getDate("date").toLocalDate(),
-                        rs.getInt("category_id")
+                        rs.getInt("service_type_id"),
+                        rs.getString("customer_name"),
+                        rs.getString("vehicle_type"),
+                        rs.getString("license_plate")
                 ));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return transactions;
+        return services;
     }
 
-    public Transaction addTransaction(Transaction transaction) {
-        String sql = "INSERT INTO transactions (description, amount, date, category_id) VALUES (?, ?, ?, ?)";
+    public Service addService(Service service) {
+        String sql = "INSERT INTO services (description, amount, date, service_type_id, customer_name, vehicle_type, license_plate) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            pstmt.setString(1, transaction.getDescription());
-            pstmt.setBigDecimal(2, transaction.getAmount());
-            pstmt.setDate(3, Date.valueOf(transaction.getDate()));
-            pstmt.setInt(4, transaction.getCategoryId());
+            pstmt.setString(1, service.getDescription());
+            pstmt.setBigDecimal(2, service.getAmount());
+            pstmt.setDate(3, Date.valueOf(service.getDate()));
+            pstmt.setInt(4, service.getserviceTypeId());
+            pstmt.setString(5, service.getCustomerName());
+            pstmt.setString(6, service.getVehicleType());
+            pstmt.setString(7, service.getLicensePlate());
             int affectedRows = pstmt.executeUpdate();
 
             if (affectedRows > 0) {
                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
                     if (rs.next()) {
-                        transaction.setId(rs.getInt(1));
+                        service.setId(rs.getInt(1));
                     }
                 }
             }
@@ -76,29 +82,32 @@ public class Database {
             e.printStackTrace();
             return null;
         }
-        return transaction;
+        return service;
     }
 
-    public Transaction updateTransaction(Transaction transaction) {
-        String sql = "UPDATE transactions SET description = ?, amount = ?, date = ?, category_id = ? WHERE id = ?";
+    public Service updateService(Service service) {
+        String sql = "UPDATE services SET description = ?, amount = ?, date = ?, service_type_id = ?, customer_name = ?, vehicle_type = ?, license_plate = ? WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, transaction.getDescription());
-            pstmt.setBigDecimal(2, transaction.getAmount());
-            pstmt.setDate(3, Date.valueOf(transaction.getDate()));
-            pstmt.setInt(4, transaction.getCategoryId());
-            pstmt.setInt(5, transaction.getId());
+            pstmt.setString(1, service.getDescription());
+            pstmt.setBigDecimal(2, service.getAmount());
+            pstmt.setDate(3, Date.valueOf(service.getDate()));
+            pstmt.setInt(4, service.getserviceTypeId());
+            pstmt.setString(5, service.getCustomerName());
+            pstmt.setString(6, service.getVehicleType());
+            pstmt.setString(7, service.getLicensePlate());
+            pstmt.setInt(8, service.getId());
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
-        return transaction;
+        return service;
     }
 
-    public void deleteTransaction(int id) {
-        String sql = "DELETE FROM transactions WHERE id = ?";
+    public void deleteService(int id) {
+        String sql = "DELETE FROM services WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
@@ -110,7 +119,7 @@ public class Database {
 
     public Map<String, Double> getDailyReport() {
         Map<String, Double> report = new HashMap<>();
-        String sql = "SELECT DATE(date) as report_date, SUM(amount) as total FROM transactions GROUP BY report_date";
+        String sql = "SELECT DATE(date) as report_date, SUM(amount) as total FROM services GROUP BY report_date";
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -124,26 +133,10 @@ public class Database {
         return report;
     }
 
-    // public Map<String, Double> getWeeklyReport() {
-    //     Map<String, Double> report = new HashMap<>();
-    //     String sql = "SELECT YEARWEEK(date) as report_week, SUM(amount) as total FROM transactions GROUP BY report_week";
-    //     try (Connection conn = getConnection();
-    //          Statement stmt = conn.createStatement();
-    //          ResultSet rs = stmt.executeQuery(sql)) {
-
-    //         while (rs.next()) {
-    //             report.put(rs.getString("report_week"), rs.getDouble("total"));
-    //         }
-    //     } catch (SQLException e) {
-    //         e.printStackTrace();
-    //     }
-    //     return report;
-    // }
-
     public Map<String, Double> getWeeklyReport() {
     Map<String, Double> report = new HashMap<>();
     String sql = "SELECT YEAR(date) AS year, WEEK(date, 1) AS week, SUM(amount) AS total " +
-                 "FROM transactions GROUP BY year, week ORDER BY year, week";
+                 "FROM services GROUP BY year, week ORDER BY year, week";
 
     try (Connection conn = getConnection();
          PreparedStatement stmt = conn.prepareStatement(sql);
@@ -153,7 +146,6 @@ public class Database {
             int year = rs.getInt("year");
             int week = rs.getInt("week");
 
-            // Format minggu agar selalu 2 digit (misalnya 05, 27, dll)
             String formattedWeek = String.format("%d-W%02d", year, week);
 
             double total = rs.getDouble("total");
@@ -169,7 +161,7 @@ public class Database {
 
     public Map<String, Double> getMonthlyReport() {
         Map<String, Double> report = new HashMap<>();
-        String sql = "SELECT DATE_FORMAT(date, '%Y-%m') as report_month, SUM(amount) as total FROM transactions GROUP BY report_month";
+        String sql = "SELECT DATE_FORMAT(date, '%Y-%m') as report_month, SUM(amount) as total FROM services GROUP BY report_month";
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -185,7 +177,7 @@ public class Database {
 
     public Map<String, Double> getYearlyReport() {
         Map<String, Double> report = new HashMap<>();
-        String sql = "SELECT YEAR(date) as report_year, SUM(amount) as total FROM transactions GROUP BY report_year";
+        String sql = "SELECT YEAR(date) as report_year, SUM(amount) as total FROM services GROUP BY report_year";
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
